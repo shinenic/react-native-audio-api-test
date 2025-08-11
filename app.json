@@ -2,6 +2,19 @@
   "expo": {
     "name": "react-native-audio-api-test",
     "slug": "react-native-audio-api-test",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "plugins": [
+      "react-native-audio-api"
+    ],
+    "android": {
+      "permissions": [
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
+      "package": "com.timwei5566.reactnativeaudioapitest"
+    },
+    "ios": {
+      "bundleIdentifier": "com.timwei5566.reactnativeaudioapitest"
+    }
   }
 }

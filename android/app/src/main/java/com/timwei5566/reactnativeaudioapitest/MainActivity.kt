@@ -1,4 +1,4 @@
-package com.reactnativeaudioapitest
+package com.timwei5566.reactnativeaudioapitest
 
 import android.os.Build
 import android.os.Bundle
