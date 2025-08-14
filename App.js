@@ -1,31 +1,25 @@
-import React, { useRef, FC, useEffect } from 'react';
+import React, { useRef, FC, useEffect, useState } from "react";
 import {
   AudioContext,
   AudioManager,
   AudioRecorder,
-  RecorderAdapterNode,
-  AudioBufferSourceNode,
-  AudioBuffer,
-} from 'react-native-audio-api';
+} from "react-native-audio-api";
 
-// import { Container, Button } from '../../components';
-import { View, Text, Button } from 'react-native';
-// import { colors } from '../../styles';
+import { View, Text, Button } from "react-native";
 
 const SAMPLE_RATE = 16000;
 
 const Record = () => {
   const recorderRef = useRef(null);
-  const aCtxRef = useRef(null);
-  const recorderAdapterRef = useRef(null);
-  const audioBuffersRef = useRef([]);
-  const sourcesRef = useRef([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const cleanupRef = useRef(null);
 
   useEffect(() => {
     AudioManager.setAudioSessionOptions({
-      iosCategory: 'playAndRecord',
-      iosMode: 'spokenAudio',
-      iosOptions: ['defaultToSpeaker', 'allowBluetoothA2DP'],
+      iosCategory: "playAndRecord",
+      iosMode: "spokenAudio",
+      iosOptions: ["defaultToSpeaker", "allowBluetoothA2DP"],
     });
 
     AudioManager.requestRecordingPermissions();
@@ -36,105 +30,51 @@ const Record = () => {
     });
   }, []);
 
-  const startEcho1 = () => {
-    if (!recorderRef.current) {
-      console.error('AudioContext or AudioRecorder is not initialized');
+  const handlePlay = async () => {
+    if (isLoading) return;
+
+    if (isPlaying) {
+      cleanupRef.current();
+      setIsPlaying(false);
       return;
     }
 
-    aCtxRef.current = new AudioContext({ sampleRate: SAMPLE_RATE });
-    recorderAdapterRef.current = aCtxRef.current.createRecorderAdapter();
-    recorderAdapterRef.current.connect(aCtxRef.current.destination);
-    recorderRef.current.connect(recorderAdapterRef.current);
+    setIsLoading(true);
+    const audioContext = new AudioContext();
 
-    recorderRef.current.onAudioReady((event) => {
-      const { buffer, numFrames, when } = event;
+    const audioBuffer = await fetch(
+      "https://software-mansion.github.io/react-native-audio-api/audio/music/example-music-01.mp3"
+    )
+      .then((response) => response.arrayBuffer())
+      .then((arrayBuffer) => audioContext.decodeAudioData(arrayBuffer));
 
-      console.log(
-        'Audio recorder buffer ready:',
-        buffer.duration,
-        numFrames,
-        when
-      );
-    });
+    const playerNode = audioContext.createBufferSource();
+    playerNode.buffer = audioBuffer;
 
-    recorderRef.current.start();
-    console.log('Recording started');
-    console.log('Audio context state:', aCtxRef.current.state);
-    if (aCtxRef.current.state === 'suspended') {
-      console.log('Resuming audio context');
-      aCtxRef.current.resume();
-    }
+    playerNode.connect(audioContext.destination);
+    playerNode.start(audioContext.currentTime);
+
+    setIsLoading(false);
+    setIsPlaying(true);
+
+    cleanupRef.current = () => {
+      playerNode.disconnect();
+      cleanupRef.current = null;
+    };
   };
-
-  /// This stops only the recording, not the audio context
-  const stopEcho1 = () => {
-    if (!recorderRef.current) {
-      console.error('AudioRecorder is not initialized');
-      return;
-    }
-    recorderRef.current.stop();
-    aCtxRef.current = null;
-    recorderAdapterRef.current = null;
-    console.log('Recording stopped');
-  };
-
-
-  const startEcho2 = () => {
-    if (!recorderRef.current) {
-      console.error('AudioContext or AudioRecorder is not initialized');
-      return;
-    }
-
-    // aCtxRef.current = new AudioContext({ sampleRate: SAMPLE_RATE });
-    // recorderAdapterRef.current = aCtxRef.current.createRecorderAdapter();
-    // recorderAdapterRef.current.connect(aCtxRef.current.destination);
-    // recorderRef.current.connect(recorderAdapterRef.current);
-
-    recorderRef.current.onAudioReady((event) => {
-      const { buffer, numFrames, when } = event;
-
-      console.log(
-        'Audio recorder buffer ready:',
-        buffer.duration,
-        numFrames,
-        when
-      );
-    });
-
-    recorderRef.current.start();
-    console.log('Recording started');
-    // console.log('Audio context state:', aCtxRef.current.state);
-    // if (aCtxRef.current.state === 'suspended') {
-    //   console.log('Resuming audio context');
-    //   aCtxRef.current.resume();
-    // }
-  };
-
-  /// This stops only the recording, not the audio context
-  const stopEcho2 = () => {
-    if (!recorderRef.current) {
-      console.error('AudioRecorder is not initialized');
-      return;
-    }
-    recorderRef.current.stop();
-    aCtxRef.current = null;
-    recorderAdapterRef.current = null;
-    console.log('Recording stopped');
-  };
-
 
   return (
     <View style={{ gap: 40 }}>
-      <Text style={{ color: 'white', fontSize: 24, textAlign: 'center' }}>
+      <Text style={{ color: "white", fontSize: 24, textAlign: "center" }}>
         Sample rate: {SAMPLE_RATE}
       </Text>
-      <View style={{ alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-        <Text style={{ color: 'white', fontSize: 24 }}>Echo example</Text>
-        <Button title="Start Recording 1" onPress={startEcho1} />
-        <Button title="Stop Recording 1" onPress={stopEcho1} />
-        <Button title="Start Recording 2" onPress={startEcho2} />
-        <Button title="Stop Recording 2" onPress={stopEcho2} />
+      <View style={{ alignItems: "center", justifyContent: "center", gap: 5 }}>
+        <Text style={{ color: "white", fontSize: 24 }}>Player example</Text>
+        <Button
+          title={isPlaying ? "Stop Audio" : "Play Audio"}
+          onPress={handlePlay}
+          disabled={isLoading}
+        />
       </View>
     </View>
   );
