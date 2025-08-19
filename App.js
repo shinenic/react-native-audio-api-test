@@ -9,37 +9,84 @@ import { View, Text, Button } from "react-native";
 
 const SAMPLE_RATE = 16000;
 
-const Record = () => {
+/**
+ * I setup the audio context and recorder in the beginning,
+ * it causes runtime error: `SetProperty: RPC timeout. Apparently deadlocked. Aborting now.`
+ * (only on iOS simulator, the real device works fine)
+ */
+const Record1 = () => {
   const recorderRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const cleanupRef = useRef(null);
+  const [isRecording, setIsRecording] = useState(false);
 
+  /**
+   * Case 1:
+   * setup audio context then setup recorder
+   */
   useEffect(() => {
-    AudioManager.setAudioSessionOptions({
-      iosCategory: "playAndRecord",
-      iosMode: "spokenAudio",
-      iosOptions: ["defaultToSpeaker", "allowBluetoothA2DP"],
-    });
+    (async () => {
+      AudioManager.setAudioSessionOptions({
+        iosCategory: "playAndRecord",
+        iosMode: "spokenAudio",
+        iosOptions: ["defaultToSpeaker", "allowBluetoothA2DP"],
+      });
 
-    AudioManager.requestRecordingPermissions();
+      AudioManager.requestRecordingPermissions();
 
-    recorderRef.current = new AudioRecorder({
-      sampleRate: SAMPLE_RATE,
-      bufferLengthInSamples: SAMPLE_RATE,
-    });
+      // do some other stuff
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const _audioContext = new AudioContext();
+
+      // do some other stuff
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      recorderRef.current = new AudioRecorder({
+        sampleRate: SAMPLE_RATE,
+        bufferLengthInSamples: SAMPLE_RATE * 2,
+      });
+
+      recorderRef.current.onAudioReady((event) => {
+        const { buffer, numFrames, when } = event;
+
+        console.log("Audio recorder buffer:", buffer.duration, numFrames, when);
+      });
+    })();
   }, []);
 
+  /**
+   * Case 2:
+   * setup recorder then setup audio context
+   */
+  // useEffect(() => {
+  //   (async () => {
+  //     AudioManager.setAudioSessionOptions({
+  //       iosCategory: "playAndRecord",
+  //       iosMode: "spokenAudio",
+  //       iosOptions: ["defaultToSpeaker", "allowBluetoothA2DP"],
+  //     });
+
+  //     AudioManager.requestRecordingPermissions();
+
+  //     // do some other stuff
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //     recorderRef.current = new AudioRecorder({
+  //       sampleRate: SAMPLE_RATE,
+  //       bufferLengthInSamples: SAMPLE_RATE * 2,
+  //     });
+
+  //     recorderRef.current.onAudioReady((event) => {
+  //       const { buffer, numFrames, when } = event;
+
+  //       console.log("Audio recorder buffer:", buffer.duration, numFrames, when);
+  //     });
+
+  //     // do some other stuff
+  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+  //     const _audioContext = new AudioContext();
+  //   })();
+  // }, []);
+
   const handlePlay = async () => {
-    if (isLoading) return;
-
-    if (isPlaying) {
-      cleanupRef.current();
-      setIsPlaying(false);
-      return;
-    }
-
-    setIsLoading(true);
     const audioContext = new AudioContext();
 
     const audioBuffer = await fetch(
@@ -54,13 +101,22 @@ const Record = () => {
     playerNode.connect(audioContext.destination);
     playerNode.start(audioContext.currentTime);
 
-    setIsLoading(false);
-    setIsPlaying(true);
+    // do something...
+    await new Promise((resolve) => setTimeout(resolve, 9000));
 
-    cleanupRef.current = () => {
-      playerNode.disconnect();
-      cleanupRef.current = null;
-    };
+    playerNode.disconnect();
+  };
+
+  const handleRecord = async () => {
+    if (isRecording) {
+      console.log("Stopping recording");
+      recorderRef.current.stop();
+      setIsRecording(false);
+    } else {
+      console.log("Starting recording");
+      recorderRef.current.start();
+      setIsRecording(true);
+    }
   };
 
   return (
@@ -71,13 +127,17 @@ const Record = () => {
       <View style={{ alignItems: "center", justifyContent: "center", gap: 5 }}>
         <Text style={{ color: "white", fontSize: 24 }}>Player example</Text>
         <Button
-          title={isPlaying ? "Stop Audio" : "Play Audio"}
-          onPress={handlePlay}
-          disabled={isLoading}
+          title={
+            isRecording
+              ? "Stop Recording (with AudioContext)"
+              : "Start Recording (with AudioContext)"
+          }
+          onPress={handleRecord}
         />
+        <Button title="Play music" onPress={handlePlay} />
       </View>
     </View>
   );
 };
 
-export default Record;
+export default Record1;
