@@ -1613,7 +1613,7 @@ PODS:
     - React-logger (= 0.79.5)
     - React-perflogger (= 0.79.5)
     - React-utils (= 0.79.5)
-  - RNAudioAPI (0.7.1):
+  - RNAudioAPI (0.8.2):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.11.18.00)
@@ -1635,9 +1635,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNAudioAPI/audioapi (= 0.7.1)
+    - RNAudioAPI/audioapi (= 0.8.2)
     - Yoga
-  - RNAudioAPI/audioapi (0.7.1):
+  - RNAudioAPI/audioapi (0.8.2):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.11.18.00)
@@ -1659,9 +1659,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNAudioAPI/audioapi/ios (= 0.7.1)
+    - RNAudioAPI/audioapi/ios (= 0.8.2)
     - Yoga
-  - RNAudioAPI/audioapi/ios (0.7.1):
+  - RNAudioAPI/audioapi/ios (0.8.2):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.11.18.00)
@@ -2001,7 +2001,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: f3e842e6cb5a825b6918a74a38402ba1409411f8
   ReactCodegen: 272c9bc1a8a917bf557bd9d032a4b3e181c6abfe
   ReactCommon: 7eb76fcd5133313d8c6a138a5c7dd89f80f189d5
-  RNAudioAPI: fd9c85cf8d7fe846f6b8fd0ee43ff0e5df6d58af
+  RNAudioAPI: b5aaa3fedd34d42ba965e84ecf0bad85c9f75373
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: adb397651e1c00672c12e9495babca70777e411e
 
